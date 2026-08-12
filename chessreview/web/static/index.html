@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>chess-review</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9822;</text></svg>">
+</head>
+<body>
+
+<header class="bar">
+  <div class="brand">
+    <h1>chess-review</h1>
+    <span class="who" id="who">loading…</span>
+  </div>
+  <div class="pills" id="coverage"></div>
+  <button id="btn-sync" class="primary">Sync now</button>
+  <button id="btn-analyze">Analyze</button>
+  <button id="btn-cancel" class="danger" hidden>Cancel</button>
+  <button id="btn-settings" class="icon" title="Settings">&#9881;</button>
+  <button id="btn-theme" class="icon" title="Toggle theme">&#9681;</button>
+</header>
+
+<div class="jobstrip" id="jobstrip">
+  <span class="dot" id="job-dot"></span>
+  <span id="job-text">idle</span>
+  <div class="track"><div class="fill" id="job-fill" style="width:0%"></div></div>
+  <span id="job-next"></span>
+</div>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="overview" aria-selected="true">Overview</button>
+  <button data-tab="mistakes" aria-selected="false">Mistakes</button>
+  <button data-tab="openings" aria-selected="false">Openings</button>
+  <button data-tab="blunders" aria-selected="false">Blunders</button>
+  <button data-tab="games" aria-selected="false">Games</button>
+</nav>
+
+<div class="filters" id="filters">
+  <label>Time control
+    <select id="f-time-class">
+      <option value="">all</option>
+      <option value="bullet">bullet</option>
+      <option value="blitz">blitz</option>
+      <option value="rapid">rapid</option>
+      <option value="daily">daily</option>
+    </select>
+  </label>
+  <label>Color
+    <select id="f-color">
+      <option value="">both</option>
+      <option value="white">white</option>
+      <option value="black">black</option>
+    </select>
+  </label>
+  <label>Since <input type="date" id="f-since"></label>
+  <label>Until <input type="date" id="f-until"></label>
+  <label><input type="checkbox" id="f-rated"> rated only</label>
+  <label>Min games <input type="number" id="f-min-games" value="3" min="1" max="50" style="width:64px"></label>
+  <button id="f-reset">Reset</button>
+</div>
+
+<main id="view"><div class="empty"><span class="spinner"></span></div></main>
+
+<dialog id="dlg-settings">
+  <div class="head">
+    <h2>Settings</h2>
+    <button style="margin-left:auto" data-close>Close</button>
+  </div>
+  <div class="body">
+    <div class="row">
+      <label class="field">Chess.com username
+        <input type="text" id="s-player" placeholder="your username">
+      </label>
+      <label class="field">Sync every (minutes)
+        <input type="number" id="s-interval" min="5" max="1440">
+      </label>
+    </div>
+    <div class="row">
+      <label class="field">Stockfish depth
+        <input type="number" id="s-depth" min="8" max="24">
+      </label>
+      <label class="field">Engine threads
+        <input type="number" id="s-threads" min="1" max="32">
+      </label>
+    </div>
+    <div class="row">
+      <label class="field">Engine hash (MB)
+        <input type="number" id="s-hash" min="16" max="8192">
+      </label>
+      <label class="field">Games per analyze batch
+        <input type="number" id="s-batch" min="1" max="5000">
+      </label>
+    </div>
+    <label class="field" style="flex-direction:row;align-items:center;gap:8px">
+      <input type="checkbox" id="s-auto"> Run the hourly sync automatically
+    </label>
+    <hr style="border:none;border-top:1px solid var(--border);margin:18px 0">
+    <h3 style="font-size:13px;margin-bottom:10px">Move explanations</h3>
+    <div class="row">
+      <label class="field">Provider
+        <select id="s-llm-provider">
+          <option value="">auto</option>
+          <option value="anthropic">Anthropic API</option>
+          <option value="local">Local server (MLX, llama.cpp, Ollama)</option>
+        </select>
+      </label>
+      <label class="field">Model
+        <input type="text" id="s-llm-model" placeholder="claude-opus-5">
+      </label>
+    </div>
+    <div class="row">
+      <label class="field">Local server URL
+        <input type="text" id="s-llm-base-url" placeholder="http://127.0.0.1:8080/v1">
+      </label>
+      <label class="field">Local server API key
+        <input type="password" id="s-llm-api-key" autocomplete="off"
+               placeholder="leave blank to keep the saved key">
+      </label>
+    </div>
+    <div class="explainrow">
+      <button id="s-llm-test">Test connection</button>
+      <button id="s-llm-clear-key">Clear saved key</button>
+      <span id="s-llm-keystate" style="font-size:12px;color:var(--text-muted);align-self:center"></span>
+    </div>
+    <div id="s-llm-result" class="explain"></div>
+    <p class="note" style="font-size:12px;color:var(--text-muted)">
+      Auto picks Anthropic when ANTHROPIC_API_KEY is set, otherwise the local
+      server. Stockfish supplies the analysis either way; the model only puts it
+      into words, so a small local model is workable, just blunter.
+      The URL is the part <em>before</em> <code>/chat/completions</code>, usually
+      ending in <code>/v1</code>. Test connection tries the likely variants and
+      shows which one answers.
+    </p>
+    <div class="explainrow">
+      <button id="s-reanalyze" class="danger">Re-analyze every game</button>
+      <span style="font-size:12px;color:var(--text-muted);align-self:center">
+        needed after a depth change or an analysis upgrade
+      </span>
+    </div>
+    <p class="note" style="font-size:12px;color:var(--text-muted)">
+      Depth 14 takes a few seconds per game. Depth 18 is roughly four times
+      slower and rarely changes which moves get flagged as blunders.
+      Re-analyzing runs in the background and can be cancelled; existing
+      explanations regenerate on their own afterwards.
+    </p>
+    <div class="actions">
+      <button data-close>Cancel</button>
+      <button class="primary" id="s-save">Save</button>
+    </div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:20px 0">
+    <h3 style="font-size:13px;margin-bottom:4px">Prompts</h3>
+    <p class="note" style="font-size:12px;color:var(--text-muted);margin-bottom:10px">
+      These are the system prompts. The user message is always the line below
+      followed by the engine's findings as JSON, which is what keeps the model
+      narrating verified analysis instead of inventing chess.
+      <br><code id="p-preamble"></code>
+    </p>
+    <div id="p-list"></div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:20px 0">
+    <h3 style="font-size:13px;margin-bottom:8px">Import PGN</h3>
+    <textarea id="s-pgn" rows="5" style="width:100%"
+              placeholder="Paste one or more games in PGN format"></textarea>
+    <div class="actions">
+      <button id="s-import">Import</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dlg-game">
+  <div class="head">
+    <h2 id="g-title">Game</h2>
+    <span id="g-sub" style="font-size:12px;color:var(--text-secondary)"></span>
+    <button style="margin-left:auto" data-close>Close</button>
+  </div>
+  <div class="body" id="g-body"></div>
+</dialog>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

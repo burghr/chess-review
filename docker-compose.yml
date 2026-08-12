@@ -1,0 +1,46 @@
+services:
+  chess-review:
+    build: .
+    image: chess-review:latest
+    container_name: chess-review
+    restart: unless-stopped
+    ports:
+      - "8765:8765"
+    volumes:
+      # Named volume works everywhere. To keep the DB somewhere you can back up
+      # directly, swap this for a bind mount and make sure the host directory is
+      # writable by uid 1000:  - ./data:/data
+      - chess-data:/data
+    environment:
+      # The only setting you have to fill in. It can also be set from the UI.
+      CHESS_REVIEW_USER: "${CHESS_REVIEW_USER:-}"
+      # Stockfish depth per position. 14 is a few seconds a game; 18 is roughly
+      # four times slower and rarely changes which moves get flagged.
+      CHESS_REVIEW_DEPTH: "14"
+      # Give the engine fewer threads than the box has, or the sync competes
+      # with everything else running on it.
+      CHESS_REVIEW_THREADS: "2"
+      CHESS_REVIEW_HASH: "256"
+      # Games analyzed per scheduled run. The backlog drains over several runs.
+      CHESS_REVIEW_BATCH: "200"
+      CHESS_REVIEW_INTERVAL: "60"
+      CHESS_REVIEW_AUTO_SYNC: "1"
+      # Set to 1 to also sync immediately on container start.
+      CHESS_REVIEW_SYNC_ON_START: "0"
+      # Move explanations. Blank auto-picks Anthropic when a key is set,
+      # otherwise the local server. See README.
+      CHESS_REVIEW_LLM_PROVIDER: "${CHESS_REVIEW_LLM_PROVIDER:-}"
+      CHESS_REVIEW_LLM_MODEL: "${CHESS_REVIEW_LLM_MODEL:-}"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+      # localhost inside a container is the container. Use host.docker.internal
+      # (Docker Desktop) or the host's LAN address for a local model server.
+      CHESS_REVIEW_LLM_BASE_URL: "${CHESS_REVIEW_LLM_BASE_URL:-}"
+      CHESS_REVIEW_LLM_API_KEY: "${CHESS_REVIEW_LLM_API_KEY:-}"
+    # Analysis is CPU-bound and will happily eat the machine. Uncomment to cap it.
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "2.0"
+
+volumes:
+  chess-data:

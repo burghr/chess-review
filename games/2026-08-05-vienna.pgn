@@ -1,0 +1,19 @@
+[Event "Casual game"]
+[Site "?"]
+[Date "2026.08.05"]
+[Round "-"]
+[White "player"]
+[Black "opponent"]
+[Result "1-0"]
+[ECO "C25"]
+[Opening "Vienna Game"]
+[TimeClass "rapid"]
+[TimeControl "600"]
+[Termination "player won by checkmate"]
+
+1. e4 e5 2. Nc3 c5 3. Nf3 Bd6 4. d4 Na6 5. Bxa6 cxd4 6. Nxd4 exd4 7. Qxd4 bxa6
+8. Qxg7 Qa5 9. Qxh8 Qc5 10. Qxg8+ Bf8 11. Qxh7 Bh6 12. Qxh6 f5 13. Qg6+ Ke7
+14. Nd5+ Qxd5 15. exd5 d6 16. Qe6+ Bxe6 17. dxe6 Rg8 18. O-O f4 19. Re1 Rb8
+20. g3 d5 21. gxf4 Rh8 22. f5 Kf6 23. b3 Rh7 24. c4 Rg7+ 25. Kh1 dxc4
+26. bxc4 Kxf5 27. c5 Kf6 28. Bb2+ Kg6 29. Bxg7 Kxg7 30. c6 Kg6 31. c7 Kg7
+32. c8=Q Kh7 33. Qf8 Kg6 34. e7 Kg5 35. e8=Q Kg4 36. Qg6+ Kh4 37. Qh8# 1-0

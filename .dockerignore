@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.db
+*.db-wal
+*.db-shm
+.git/
+.gitignore
+data/
+games/
+README.md

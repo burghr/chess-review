@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+chess.db
+chess.db-wal
+chess.db-shm

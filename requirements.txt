@@ -1,0 +1,6 @@
+requests>=2.31
+chess>=1.10
+rich>=13.7
+fastapi>=0.115
+uvicorn[standard]>=0.30
+anthropic>=0.69
